@@ -2,7 +2,7 @@
 """
 setup-benchmark.py
 
-Creates a fair, reproducible benchmark for session-recall.
+Creates a fair, reproducible benchmark for total-recall.
 
 Both directories are IDENTICAL in every way:
   - same codebase
@@ -14,7 +14,7 @@ The only difference is one line in .claude/settings.json:
                       use this for Run A (cold start)
 
   testdata-recall/  — SessionStart hook ENABLED
-                      use this for Run B (with session-recall)
+                      use this for Run B (with total-recall)
 
 This means anyone can diff the two directories and see exactly one
 meaningful difference. The test is fully reproducible and auditable.
@@ -284,7 +284,7 @@ SETTINGS_HOOK_ENABLED = {
                 "hooks": [
                     {
                         "type": "command",
-                        "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-start-recall.sh\""
+                        "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-start-total-recall.sh\""
                     }
                 ]
             }
@@ -293,7 +293,7 @@ SETTINGS_HOOK_ENABLED = {
 }
 
 SETTINGS_HOOK_DISABLED = {
-    "_comment": "session-recall hook is intentionally disabled for cold-start benchmark",
+    "_comment": "total-recall hook is intentionally disabled for cold-start benchmark",
     "hooks": {}
 }
 
@@ -343,17 +343,17 @@ def main():
 
         print(f"✅ Seeded {len(sessions)} sessions → {history_dir}")
 
-    # ── 3. Copy session-recall tools into both dirs ───────────────────────────
+    # ── 3. Copy total-recall tools into both dirs ───────────────────────────
     for target_dir in [COLD_DIR, RECALL_DIR]:
         dot_claude = target_dir / ".claude"
         dot_claude.mkdir(exist_ok=True)
         (dot_claude / "hooks").mkdir(exist_ok=True)
         (dot_claude / "commands").mkdir(exist_ok=True)
 
-        shutil.copy(SCRIPT_DIR / ".claude" / "session-recall.py",
-                    dot_claude / "session-recall.py")
-        shutil.copy(SCRIPT_DIR / ".claude" / "hooks" / "session-start-recall.sh",
-                    dot_claude / "hooks" / "session-start-recall.sh")
+        shutil.copy(SCRIPT_DIR / ".claude" / "total-recall.py",
+                    dot_claude / "total-recall.py")
+        shutil.copy(SCRIPT_DIR / ".claude" / "hooks" / "session-start-total-recall.sh",
+                    dot_claude / "hooks" / "session-start-total-recall.sh")
         shutil.copy(SCRIPT_DIR / ".claude" / "commands" / "recall.md",
                     dot_claude / "commands" / "recall.md")
         shutil.copy(SCRIPT_DIR / "show-tokens.sh", target_dir / "show-tokens.sh")
@@ -378,7 +378,7 @@ def main():
     print("── Verifying recall output for testdata-recall ──────────────────────")
     import subprocess
     result = subprocess.run(
-        ["python3", str(RECALL_DIR / ".claude" / "session-recall.py"),
+        ["python3", str(RECALL_DIR / ".claude" / "total-recall.py"),
          "--text", "--limit", "3", "--days", "7"],
         capture_output=True, text=True,
         env={**os.environ, "PYTHONUTF8": "1"}
@@ -402,7 +402,7 @@ def main():
     print(f"  # Run the 4 test prompts")
     print(f"  # Run ./show-tokens.sh after each prompt")
     print()
-    print("Run B — with session-recall (hook enabled, history injected):")
+    print("Run B — with total-recall (hook enabled, history injected):")
     print(f"  cd {RECALL_DIR}")
     print(f"  # Open in VS Code → open Claude Code")
     print(f"  # You should see --- SESSION RECALL --- at the top")

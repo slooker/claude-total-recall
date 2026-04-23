@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# install-global.sh — install session-recall ONCE for ALL projects
+# install-global.sh — install total-recall ONCE for ALL projects
 #
 # Instead of copying files into each project's .claude/ folder,
-# this puts session-recall in ~/.claude/ and wires it globally.
+# this puts total-recall in ~/.claude/ and wires it globally.
 # Every Claude Code project on your machine gets automatic recall.
 #
-# Run from the session-recall directory:
+# Run from the total-recall directory:
 #   bash install-global.sh
 
 set -euo pipefail
@@ -16,7 +16,7 @@ GLOBAL_HOOKS="$GLOBAL_CLAUDE/hooks"
 GLOBAL_COMMANDS="$GLOBAL_CLAUDE/commands"
 GLOBAL_SETTINGS="$GLOBAL_CLAUDE/settings.json"
 
-echo "Installing session-recall globally → $GLOBAL_CLAUDE"
+echo "Installing total-recall globally → $GLOBAL_CLAUDE"
 echo ""
 
 # ── 1. Create global .claude structure ───────────────────────────────────────
@@ -24,16 +24,16 @@ mkdir -p "$GLOBAL_HOOKS"
 mkdir -p "$GLOBAL_COMMANDS"
 
 # ── 2. Copy the recall script globally ───────────────────────────────────────
-cp "$SCRIPT_DIR/session-recall.py" "$GLOBAL_CLAUDE/session-recall.py"
-echo "✅ Copied session-recall.py → ~/.claude/session-recall.py"
+cp "$SCRIPT_DIR/total-recall.py" "$GLOBAL_CLAUDE/total-recall.py"
+echo "✅ Copied total-recall.py → ~/.claude/total-recall.py"
 
 # ── 3. Write global hook scripts (use $HOME, not $CLAUDE_PROJECT_DIR) ────────
-cat > "$GLOBAL_HOOKS/session-start-recall.sh" << 'HOOKEOF'
+cat > "$GLOBAL_HOOKS/session-start-total-recall.sh" << 'HOOKEOF'
 #!/usr/bin/env bash
-# Global SessionStart hook for session-recall
+# Global SessionStart hook for total-recall
 set -euo pipefail
 
-RECALL_SCRIPT="$HOME/.claude/session-recall.py"
+RECALL_SCRIPT="$HOME/.claude/total-recall.py"
 
 if [ ! -f "$RECALL_SCRIPT" ]; then
   exit 0
@@ -56,11 +56,11 @@ $OUTPUT
 EOF
 HOOKEOF
 
-chmod +x "$GLOBAL_HOOKS/session-start-recall.sh"
-echo "✅ Created ~/.claude/hooks/session-start-recall.sh"
+chmod +x "$GLOBAL_HOOKS/session-start-total-recall.sh"
+echo "✅ Created ~/.claude/hooks/session-start-total-recall.sh"
 
 # ── 4. Merge into global settings.json ───────────────────────────────────────
-NEW_HOOK_START='bash "$HOME/.claude/hooks/session-start-recall.sh"'
+NEW_HOOK_START='bash "$HOME/.claude/hooks/session-start-total-recall.sh"'
 
 if [ -f "$GLOBAL_SETTINGS" ]; then
   python3 - << PYEOF
@@ -97,7 +97,7 @@ else
         "hooks": [
           {
             "type": "command",
-            "command": "bash \\"$HOME/.claude/hooks/session-start-recall.sh\\""
+            "command": "bash \\"$HOME/.claude/hooks/session-start-total-recall.sh\\""
           }
         ]
       }
@@ -120,7 +120,7 @@ allowed-tools: Bash
 Run this command and summarize the output for me concisely:
 
 ```bash
-python3 "$HOME/.claude/session-recall.py" --text --limit 5 --days 7
+python3 "$HOME/.claude/total-recall.py" --text --limit 5 --days 7
 ```
 
 Focus on:
@@ -138,11 +138,11 @@ fi
 # ── 6. Health check ───────────────────────────────────────────────────────────
 echo ""
 echo "── Health check ─────────────────────────────────────────────────────"
-python3 "$GLOBAL_CLAUDE/session-recall.py" health || true
+python3 "$GLOBAL_CLAUDE/total-recall.py" health || true
 
 echo ""
 echo "🎉 Global install complete!"
-echo "   session-recall is now active for ALL your Claude Code projects."
+echo "   total-recall is now active for ALL your Claude Code projects."
 echo "   Restart Claude Code (or /clear) to activate in your current session."
 echo ""
 echo "   To install per-project instead (for sharing with a team):"

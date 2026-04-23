@@ -1,4 +1,4 @@
-# session-recall
+# total-recall
 
 **Zero-dependency context recall for Claude Code.**  
 Automatically injects your recent session history at the start of every session — before you type a word.
@@ -22,17 +22,17 @@ Claude Code writes a complete JSONL transcript of every session to `~/.claude/pr
 
 ```bash
 # From your project root:
-bash /path/to/session-recall/install.sh
+bash /path/to/total-recall/install.sh
 ```
 
 Then **restart Claude Code** (close and reopen the panel). The hook activates on the next session open.
 
 ### What install does
-- Copies `session-recall.py` → `.claude/session-recall.py`
-- Copies hook script → `.claude/hooks/session-start-recall.sh`
+- Copies `total-recall.py` → `.claude/total-recall.py`
+- Copies hook script → `.claude/hooks/session-start-total-recall.sh`
 - Merges `SessionStart` hook into `.claude/settings.json`
 - Adds `/recall` slash command to `.claude/commands/`
-- Appends a Session Recall section to `CLAUDE.md`
+- Appends a Total Recall section to `CLAUDE.md`
 
 ---
 
@@ -41,7 +41,7 @@ Then **restart Claude Code** (close and reopen the panel). The hook activates on
 **Automatic** — just open or resume a session. You'll see something like:
 
 ```
-=== Session Recall: myapp ===
+=== Total Recall: myapp ===
 ── Session 1 (1.0h ago) ──
 Task: Fix the JWT refresh token flow we left incomplete yesterday
 Modified: src/auth/jwt.py, tests/test_auth.py
@@ -56,16 +56,16 @@ Read: src/auth/jwt.py
 
 **Health check** — verify the tool is set up correctly:
 ```bash
-python3 .claude/session-recall.py health
+python3 .claude/total-recall.py health
 ```
 
 **CLI options:**
 ```bash
-python3 .claude/session-recall.py                  # JSON output, last 3 sessions, 3 days
-python3 .claude/session-recall.py --text           # human-readable
-python3 .claude/session-recall.py --days 7         # look back 7 days
-python3 .claude/session-recall.py --limit 5        # show up to 5 sessions
-python3 .claude/session-recall.py health           # diagnostics
+python3 .claude/total-recall.py                  # JSON output, last 3 sessions, 3 days
+python3 .claude/total-recall.py --text           # human-readable
+python3 .claude/total-recall.py --days 7         # look back 7 days
+python3 .claude/total-recall.py --limit 5        # show up to 5 sessions
+python3 .claude/total-recall.py health           # diagnostics
 ```
 
 ---
@@ -74,7 +74,7 @@ python3 .claude/session-recall.py health           # diagnostics
 
 These two commands behave differently and it's worth understanding the distinction.
 
-**`/compact`** works seamlessly with session-recall. It writes a summary record to the JSONL file before compressing the context. The next time you open a session, recall will show that summary — often more useful than the raw prompt list.
+**`/compact`** works seamlessly with total-recall. It writes a summary record to the JSONL file before compressing the context. The next time you open a session, recall will show that summary — often more useful than the raw prompt list.
 
 **`/clear`** does **not** re-trigger the `SessionStart` hook. Claude Code does not fire a new session event on `/clear` — it resets the conversation context but stays in the same session. This means:
 
@@ -92,12 +92,12 @@ There is currently no Claude Code hook that fires on `/clear` (and custom comman
 
 ```
 your-project/
-├── CLAUDE.md                          ← Session Recall section appended
+├── CLAUDE.md                          ← Total Recall section appended
 └── .claude/
     ├── settings.json                  ← SessionStart hook added
-    ├── session-recall.py              ← The recall engine
+    ├── total-recall.py              ← The recall engine
     ├── hooks/
-    │   └── session-start-recall.sh   ← Fires automatically on session open
+    │   └── session-start-total-recall.sh   ← Fires automatically on session open
     └── commands/
         └── recall.md                 ← /recall slash command
 ```
@@ -149,7 +149,7 @@ Savings grow with each prompt because without recall, Claude's discovery tool ca
 To activate across all projects without copying files into each one:
 
 ```bash
-bash /path/to/session-recall/install-global.sh
+bash /path/to/total-recall/install-global.sh
 ```
 
 This installs the recall script and hook into `~/.claude/` so it fires for every Claude Code project on your machine.

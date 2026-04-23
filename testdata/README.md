@@ -1,6 +1,6 @@
 # testdata/
 
-Synthetic codebase fixture for benchmarking session-recall token savings.
+Synthetic codebase fixture for benchmarking total-recall token savings.
 
 This is **not real application code**. It exists solely to give Claude
 something to search through during the benchmark test, so the cold-start

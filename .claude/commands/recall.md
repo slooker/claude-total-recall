@@ -6,7 +6,7 @@ allowed-tools: Bash
 Run this command and summarize the output for me concisely:
 
 ```bash
-python3 .claude/session-recall.py --text --limit 5 --days 7
+python3 .claude/total-recall.py --text --limit 5 --days 7
 ```
 
 Focus on:

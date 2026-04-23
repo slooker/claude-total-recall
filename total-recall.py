@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """
-session-recall: Zero-dependency context recall for Claude Code.
+total-recall: Zero-dependency context recall for Claude Code.
 Reads ~/.claude/projects/<cwd>/*.jsonl and returns a compact
 JSON summary so Claude Code re-orients in ~50 tokens instead
 of burning 10k+ on blind grep/find searches.
 
 Usage:
-  session-recall             # auto-detect project from cwd
-  session-recall --days 7    # look back N days (default: 3)
-  session-recall --limit 5   # max sessions to scan (default: 3)
-  session-recall --json      # output raw JSON (default)
-  session-recall --text      # human-readable text output
-  session-recall health      # check setup and data freshness
+  total-recall             # auto-detect project from cwd
+  total-recall --days 7    # look back N days (default: 3)
+  total-recall --limit 5   # max sessions to scan (default: 3)
+  total-recall --json      # output raw JSON (default)
+  total-recall --text      # human-readable text output
+  total-recall health      # check setup and data freshness
 """
 
 import json
@@ -173,9 +173,9 @@ def rel(path: str, cwd: str) -> str:
 
 def format_text(sessions: list[dict], cwd: str) -> str:
     if not sessions:
-        return f"=== Session Recall: {Path(cwd).name} ===\nNo recent sessions found."
+        return f"=== Total Recall: {Path(cwd).name} ===\nNo recent sessions found."
 
-    lines = [f"=== Session Recall: {Path(cwd).name} ==="]
+    lines = [f"=== Total Recall: {Path(cwd).name} ==="]
     for i, s in enumerate(sessions, 1):
         age = s.get("age_hours", "?")
         lines.append(f"── Session {i} ({age}h ago) ──")
@@ -197,7 +197,7 @@ def format_text(sessions: list[dict], cwd: str) -> str:
 # ── health check ──────────────────────────────────────────────────────────────
 
 def cmd_health(cwd: str) -> int:
-    print("session-recall health check")
+    print("total-recall health check")
     print("-" * 50)
 
     base = Path.home() / ".claude" / "projects"
@@ -225,7 +225,7 @@ def cmd_health(cwd: str) -> int:
     else:
         print("⚠️  No .jsonl files found yet")
 
-    print("\nAll good — session-recall is ready.")
+    print("\nAll good — total-recall is ready.")
     return 0
 
 # ── main ──────────────────────────────────────────────────────────────────────

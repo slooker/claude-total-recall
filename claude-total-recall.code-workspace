@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "claude-total-recall",
+			"path": "."
+		},
+		{
+			"name": "testdata",
+			"path": "../../Downloads/testdata"
+		}
+	],
+	"settings": {}
+}

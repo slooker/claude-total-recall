@@ -1,7 +1,7 @@
 # How to run the benchmark test
 
 This guide walks through a controlled comparison of Claude Code token usage
-with and without session-recall enabled.
+with and without total-recall enabled.
 
 The two test directories are byte-for-byte identical — same codebase, same
 seeded JSONL session history — differing in exactly one thing: whether the
@@ -16,7 +16,7 @@ Expected output (the only difference):
 ```diff
 diff -r testdata-cold/.claude/settings.json testdata-recall/.claude/settings.json
 2,3c2,13
-<   "_comment": "session-recall hook is intentionally disabled for cold-start benchmark",
+<   "_comment": "total-recall hook is intentionally disabled for cold-start benchmark",
 <   "hooks": {}
 ---
 >   "hooks": {
@@ -25,7 +25,7 @@ diff -r testdata-cold/.claude/settings.json testdata-recall/.claude/settings.jso
 >         "hooks": [
 >           {
 >             "type": "command",
->             "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-start-recall.sh\""
+>             "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-start-total-recall.sh\""
 >           }
 >         ]
 >       }
@@ -61,7 +61,7 @@ This creates two sibling directories:
 
 The seeded JSONL history simulates three prior working sessions on the
 testdata project: the original subscription tier feature, a failed migration
-incident, and the fix. This is the history session-recall will summarize.
+incident, and the fix. This is the history total-recall will summarize.
 
 ---
 
@@ -78,13 +78,13 @@ incident, and the fix. This is the history session-recall will summarize.
 
 ---
 
-## Step 3 — Run B (with session-recall)
+## Step 3 — Run B (with total-recall)
 
 1. Open `../testdata-recall` as a folder in VS Code
 2. Open the Claude Code panel
 3. Before typing anything, you should see a block like:
    ```
-   === Session Recall: testdata-recall ===
+   === Total Recall: testdata-recall ===
    ── Session 1 (Xh ago) ──
    Task: Production incident — subscription tier migration failed,
    Modified: db/migrations/003_subscription_tier.sql
@@ -190,13 +190,13 @@ cat ../testdata-recall/.claude/settings.json
 To run the hook manually and see its output:
 ```bash
 cd ../testdata-recall
-bash .claude/hooks/session-start-recall.sh
+bash .claude/hooks/session-start-total-recall.sh
 ```
 
 To run the recall script directly and isolate issues:
 ```bash
 cd ../testdata-recall
-PYTHONUTF8=1 python3 .claude/session-recall.py --text --limit 3 --days 7
+PYTHONUTF8=1 python3 .claude/total-recall.py --text --limit 3 --days 7
 ```
 
 **`show-tokens.sh` returns zero**
