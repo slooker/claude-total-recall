@@ -167,7 +167,7 @@ def format_json(sessions: list[dict], cwd: str) -> str:
 def rel(path: str, cwd: str) -> str:
     """Return path relative to cwd, falling back to basename."""
     try:
-        return str(Path(path).relative_to(cwd))
+        return str(Path(path).relative_to(cwd)).replace("\\", "/")
     except ValueError:
         return Path(path).name
 
@@ -179,9 +179,12 @@ def format_text(sessions: list[dict], cwd: str) -> str:
     for i, s in enumerate(sessions, 1):
         age = s.get("age_hours", "?")
         lines.append(f"── Session {i} ({age}h ago) ──")
-        hint = s.get("summary") or (s["user_prompts"][0][:80] if s.get("user_prompts") else "")
+        raw = s.get("summary") or (s["user_prompts"][0] if s.get("user_prompts") else "")
+        hint = " ".join(raw.split())
+        if len(hint) > 80:
+            hint = hint[:80].rsplit(" ", 1)[0]
         if hint:
-            lines.append(f"Task: {hint[:80]}")
+            lines.append(f"Task: {hint}")
         if s.get("files_modified"):
             short = [rel(f, cwd) for f in s["files_modified"][:8]]
             lines.append(f"Modified: {', '.join(short)}")
