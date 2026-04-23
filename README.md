@@ -10,11 +10,11 @@ Same idea, built natively for Claude Code's JSONL session format.
 
 ## The problem
 
-Every time you `/clear` or open a new Claude Code session, it has no memory of what you were doing. You spend 5–10 minutes and thousands of tokens re-explaining context that Claude already knew an hour ago.
+Every time you open a new Claude Code session, it has no memory of what you were doing. You spend tokens and time re-explaining context that Claude already knew an hour ago.
 
 ## The fix
 
-Claude Code writes a complete JSONL transcript of every session to `~/.claude/projects/<your-project>/`. This tool reads those files and injects a compact summary as a `SessionStart` hook — automatically, before your first message, costing ~50 tokens instead of ~10,000.
+Claude Code writes a complete JSONL transcript of every session to `~/.claude/projects/<your-project>/`. This tool reads those files and injects a compact summary as a `SessionStart` hook — automatically, before your first message.
 
 ---
 
@@ -25,12 +25,12 @@ Claude Code writes a complete JSONL transcript of every session to `~/.claude/pr
 bash /path/to/session-recall/install.sh
 ```
 
-Then restart Claude Code or run `/clear`. The hook activates immediately.
+Then **restart Claude Code** (close and reopen the panel). The hook activates on the next session open.
 
 ### What install does
 - Copies `session-recall.py` → `.claude/session-recall.py`
-- Copies hook scripts → `.claude/hooks/`
-- Merges `SessionStart`/`SessionEnd` hooks into `.claude/settings.json`
+- Copies hook script → `.claude/hooks/session-start-recall.sh`
+- Merges `SessionStart` hook into `.claude/settings.json`
 - Adds `/recall` slash command to `.claude/commands/`
 - Appends a Session Recall section to `CLAUDE.md`
 
@@ -38,22 +38,18 @@ Then restart Claude Code or run `/clear`. The hook activates immediately.
 
 ## Usage
 
-**Automatic** — just open or resume a session. You'll see:
+**Automatic** — just open or resume a session. You'll see something like:
 
 ```
---- SESSION RECALL ---
 === Session Recall: myapp ===
-
-── Session 1 (1.0h ago) ──────────────────
-First prompt: Fix the JWT refresh token flow we left incomplete yesterday
+── Session 1 (1.0h ago) ──
+Task: Fix the JWT refresh token flow we left incomplete yesterday
 Modified: src/auth/jwt.py, tests/test_auth.py
+Read: src/auth/jwt.py, src/auth/middleware.py
+── Session 2 (18.0h ago) ──
+Task: Implemented JWT auth — middleware and token signing done. Refresh flow TODO.
+Modified: src/auth/jwt.py, src/auth/middleware.py
 Read: src/auth/jwt.py
-
-── Session 2 (18.0h ago) ──────────────────
-Summary: Implemented JWT auth. src/auth/jwt.py and src/auth/middleware.py.
-Tests passing. TODO: refresh token flow not yet implemented.
-...
---- END SESSION RECALL ---
 ```
 
 **Manual mid-session** — type `/recall` to get a fresh summary at any point.
@@ -74,17 +70,34 @@ python3 .claude/session-recall.py health           # diagnostics
 
 ---
 
+## `/clear` and `/compact` behavior
+
+These two commands behave differently and it's worth understanding the distinction.
+
+**`/compact`** works seamlessly with session-recall. It writes a summary record to the JSONL file before compressing the context. The next time you open a session, recall will show that summary — often more useful than the raw prompt list.
+
+**`/clear`** does **not** re-trigger the `SessionStart` hook. Claude Code does not fire a new session event on `/clear` — it resets the conversation context but stays in the same session. This means:
+
+- The recall block from session open is gone
+- Claude has no memory of the files and context established at the start of the session
+- Your next message starts cold
+
+**Fix:** run `/recall` immediately after `/clear`. It reads the JSONL files fresh and re-injects the context summary as a one-shot response. One command, same result.
+
+There is currently no Claude Code hook that fires on `/clear` (and custom commands cannot override built-in commands), so this cannot be made fully automatic. The `/recall` command is the intended recovery path.
+
+---
+
 ## File structure after install
 
 ```
 your-project/
 ├── CLAUDE.md                          ← Session Recall section appended
 └── .claude/
-    ├── settings.json                  ← SessionStart + SessionEnd hooks
+    ├── settings.json                  ← SessionStart hook added
     ├── session-recall.py              ← The recall engine
     ├── hooks/
-    │   ├── session-start-recall.sh   ← Fires automatically on session open
-    │   └── session-end-recall.sh     ← Logs session end (optional)
+    │   └── session-start-recall.sh   ← Fires automatically on session open
     └── commands/
         └── recall.md                 ← /recall slash command
 ```
@@ -109,35 +122,37 @@ Where `<encoded-path>` is your project's absolute path with non-alphanumeric cha
 - **Read files** — anything inspected by Read/Grep/Glob tools
 - **Timestamps** — how long ago the session was
 
-### Sessions without summaries
-If you hit `/clear` abruptly (no compaction), the tool still recovers the prompt and file list from raw tool calls. Nothing is lost.
-
 ### Token cost
-- Typical recall output: **~80–150 tokens**
-- vs. blind codebase re-scan: **~10,000–16,000 tokens**
+
+Based on a [controlled benchmark](HOW_I_TESTED.md) against a 4-prompt session on a Python codebase:
+
+| | After P1 | After P2 | After P3 | After P4 |
+|---|---|---|---|---|
+| Without recall | 1,134 | 3,256 | 5,190 | 8,235 |
+| With recall | 959 | 2,224 | 3,773 | 6,175 |
+| **Savings** | **175** | **1,032** | **1,417** | **2,060** |
+
+Savings grow with each prompt because without recall, Claude's discovery tool calls accumulate in the context window and inflate the cost of every subsequent message. With recall, Claude navigates directly to the relevant files and that overhead never builds up.
 
 ---
 
 ## Requirements
 
 - Python 3.8+ (stdlib only — no pip installs)
-- Claude Code with hooks support (v2.0+)
-- macOS or Linux
+- Claude Code with hooks support
+- macOS, Linux, or Windows (Git Bash)
 
 ---
 
 ## Global install (optional)
 
-To use across all projects without copying files each time:
+To activate across all projects without copying files into each one:
 
 ```bash
-# Copy the recall script globally
-cp session-recall.py ~/.claude/session-recall.py
-
-# Add to ~/.claude/settings.json (global hooks apply to all projects)
-# Edit ~/.claude/settings.json and add the SessionStart hook pointing to:
-# bash "$HOME/.claude/hooks/session-start-recall.sh"
+bash /path/to/session-recall/install-global.sh
 ```
+
+This installs the recall script and hook into `~/.claude/` so it fires for every Claude Code project on your machine.
 
 ---
 
@@ -146,7 +161,8 @@ cp session-recall.py ~/.claude/session-recall.py
 - Read-only — never writes to your session database
 - Local only — history is per-machine
 - No semantic search — matches by recency and file path, not meaning
-- Summaries only exist if Claude ran compaction before `/clear`
+- `/clear` does not re-trigger the hook — run `/recall` manually to recover (see above)
+- Summaries only appear if Claude ran `/compact` before the session ended
 
 ---
 
