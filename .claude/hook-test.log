@@ -1,0 +1,11 @@
+HOOK FIRED at Wed Apr 22 11:44:39 EDT 2026
+HOOK FIRED at Wed Apr 22 11:50:46 EDT 2026
+  CLAUDE_PROJECT_DIR=/c/Users/shawn/code/claude-total-recall
+  python3=/c/Users/shawn/AppData/Local/Programs/Python/Python314/python3
+  exit_code=0
+  output_len=1380
+HOOK FIRED at Thu Apr 23 10:24:01 EDT 2026
+  CLAUDE_PROJECT_DIR=/c/Users/shawn/code/claude-total-recall
+  python3=/c/Users/shawn/AppData/Local/Programs/Python/Python314/python3
+  exit_code=0
+  output_len=1744
