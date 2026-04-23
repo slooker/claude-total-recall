@@ -1,6 +1,6 @@
 # total-recall
 
-**Zero-dependency context recall for Claude Code.**  
+**(Near) Zero-dependency context recall for Claude Code.**  
 Automatically injects your recent session history at the start of every session — before you type a word.
 
 Inspired by [auto-memory for GitHub Copilot CLI](https://github.com/dezgit2025/auto-memory).  
@@ -38,7 +38,7 @@ Then **restart Claude Code** (close and reopen the panel). The hook activates on
 
 ## Usage
 
-**Automatic** — just open or resume a session. You'll see something like:
+**Automatic** — just open or resume a session. Before your first message, Claude automatically receives context like this (injected into its system context — you won't see it directly in the chat):
 
 ```
 === Total Recall: myapp ===
@@ -52,11 +52,26 @@ Modified: src/auth/jwt.py, src/auth/middleware.py
 Read: src/auth/jwt.py
 ```
 
+Claude uses this to orient immediately, without making discovery tool calls (Read, Grep, Glob) that burn tokens and slow down your first response.
+
 **Manual mid-session** — type `/recall` to get a fresh summary at any point.
 
 **Health check** — verify the tool is set up correctly:
-```bash
-python3 .claude/total-recall.py health
+```
+/recall health
+```
+
+Example output:
+```
+total-recall health check
+--------------------------------------------------
+✅ ~/.claude/projects exists
+✅ Project dir: ~/.claude/projects/c--Users-you-code-myapp
+✅ Session files: 7
+✅ Newest session: 0.0h ago
+✅ Records in newest session: 85
+
+All good — total-recall is ready.
 ```
 
 **CLI options:**
@@ -138,9 +153,9 @@ Savings grow with each prompt because without recall, Claude's discovery tool ca
 
 ## Requirements
 
-- Python 3.8+ (stdlib only — no pip installs)
-- Claude Code with hooks support
-- macOS, Linux, or Windows (Git Bash)
+- [Python 3.8+](https://www.python.org/downloads/) (stdlib only — no pip installs needed)
+- [Claude Code](https://claude.ai/download) with hooks support
+- macOS or Linux — or Windows with [Git Bash](https://git-scm.com/downloads)
 
 ---
 
